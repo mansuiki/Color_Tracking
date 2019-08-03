@@ -20,30 +20,38 @@ int main()
     Mat HSV;
     Mat result;
 
+    const string configName = "CONFIG";
+    int HMin, SMin, VMin, HMax = 256, SMax = 256, VMax = 256;
 
     cam.open(0);
-    if (!cam.isOpened()) {
+    if (!cam.isOpened())
+    {
         cerr << "ERROR - Failed to Open Cam\n";
         return -1;
     }
-    
-    
+
+    namedWindow(configName, WINDOW_AUTOSIZE);
+    createTrackbar("H", configName, &HMin, 256);
+    createTrackbar("S", configName, &SMin, 256);
+    createTrackbar("V", configName, &VMin, 256);
+    createTrackbar("HMax", configName, &HMax, 256);
+    createTrackbar("SMax", configName, &SMax, 256);
+    createTrackbar("VMax", configName, &VMax, 256);
+
     while (1)
     {
         cam >> img;
 
         cvtColor(img, HSV, COLOR_BGR2HSV);
-        inRange(HSV, Scalar(0,0,0), Scalar(255,255,255), mask);
+        inRange(HSV, Scalar(HMin, SMin, VMin), Scalar(HMax, SMax, VMax), mask);
         cvtColor(mask, mask, COLOR_GRAY2BGR);
         hconcat(img, mask, result);
 
         imshow("result", result);
-        
-        
-        if (waitKey(5) >= 0)
+
+        if (waitKey(5)>=0)
             break;
     }
-    
-    
+
     return 0;
 }
