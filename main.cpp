@@ -22,6 +22,7 @@ int main()
 
     const string configName = "CONFIG";
     int HMin, SMin, VMin, HMax = 256, SMax = 256, VMax = 256;
+    int Osize, Csize;
 
     cam.open(0);
     if (!cam.isOpened())
@@ -37,6 +38,8 @@ int main()
     createTrackbar("HMax", configName, &HMax, 256);
     createTrackbar("SMax", configName, &SMax, 256);
     createTrackbar("VMax", configName, &VMax, 256);
+    createTrackbar("OSize", configName, &Osize, 20);
+    createTrackbar("CSize", configName, &Csize, 20);
 
     while (1)
     {
@@ -44,6 +47,11 @@ int main()
 
         cvtColor(img, HSV, COLOR_BGR2HSV);
         inRange(HSV, Scalar(HMin, SMin, VMin), Scalar(HMax, SMax, VMax), mask);
+
+        // https://docs.opencv.org/4.0.1/d3/dbe/tutorial_opening_closing_hats.html
+        morphologyEx(mask, mask, MORPH_OPEN, getStructuringElement(0, Size(2*Osize+1, 2*Osize+1), Point(Osize, Osize)));
+        morphologyEx(mask, mask, MORPH_CLOSE, getStructuringElement(0, Size(2*Csize+1, 2*Csize+1), Point(Csize, Csize)));
+
         cvtColor(mask, mask, COLOR_GRAY2BGR);
         hconcat(img, mask, result);
 
