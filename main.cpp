@@ -50,7 +50,36 @@ int main()
 
         // https://docs.opencv.org/4.0.1/d3/dbe/tutorial_opening_closing_hats.html
         morphologyEx(mask, mask, MORPH_OPEN, getStructuringElement(0, Size(2*Osize+1, 2*Osize+1), Point(Osize, Osize)));
-        morphologyEx(mask, mask, MORPH_CLOSE, getStructuringElement(0, Size(2*Csize+1, 2*Csize+1), Point(Csize, Csize)));
+        morphologyEx(mask, mask, MORPH_CLOSE,
+                getStructuringElement(0, Size(2*Csize+1, 2*Csize+1), Point(Csize, Csize)));
+
+        {
+            // https://www.youtube.com/watch?v=T5Vv2mgj2Os
+            Mat label, stat, centroid;
+            int labels = connectedComponentsWithStats(mask, label, stat, centroid);
+
+            int maxsize = -1, current = 0; // To Find Biggest Part!
+            for (int i = 1; i<labels; i++)
+            {
+                int area = stat.at<int>(i, CC_STAT_AREA);
+                if (maxsize<area)
+                {
+                    maxsize = area;
+                    current = i;
+                }
+            }
+
+            int height = stat.at<int>(current, CC_STAT_HEIGHT);
+            int left = stat.at<int>(current, CC_STAT_LEFT);
+            int top = stat.at<int>(current, CC_STAT_TOP);
+            int width = stat.at<int>(current, CC_STAT_WIDTH);
+            Point center = Point(centroid.at<double>(current, 0), centroid.at<double>(current, 1));
+
+            rectangle(img, Point(left, top), Point(left+width, top+height), Scalar(0, 0, 255), 3);
+            circle(img, center, 4, Scalar(0,255,0), 4);
+            putText(img, to_string(center.x)+", "+to_string(center.y),Point(center.x, center.y+40), 1, 3, Scalar(0,255,0), 3);
+
+        }
 
         cvtColor(mask, mask, COLOR_GRAY2BGR);
         hconcat(img, mask, result);
